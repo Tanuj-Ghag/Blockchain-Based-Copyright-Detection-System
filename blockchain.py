@@ -1,4 +1,6 @@
 from time import time
+import requests
+from web3 import Web3
 import datetime
 import os
 import pickle
@@ -41,12 +43,13 @@ class Transaction:
     on the blockchain.
     """
 class Block:
-    def __init__(self, index, transaction, previous_hash):
+    def __init__(self, index, transaction, previous_hash, transaction_hash):
         
         self.index = index
         self.timestamp = time()
         self.previous_hash = previous_hash
         self.transaction = transaction
+        self.transaction_hash = transaction_hash
     
     def compute_hash(self):
         concat_str = str(self.index) + str(self.timestamp) + str(self.previous_hash) + str(self.transaction['author']) + str(self.transaction['genre'])
@@ -58,7 +61,8 @@ class Block:
             'index': self.index,
             'timestamp': self.timestamp,
             'previous_hash': self.previous_hash,
-            'transaction': self.transaction
+            'transaction': self.transaction,
+            'transaction_hash': self.transaction_hash
         }
 
 
@@ -81,7 +85,7 @@ class Blockchain:
             'genre': "",
             'media': "",
         }
-        new_block = Block(index=0, transaction=empty_media, previous_hash=0)
+        new_block = Block(index=0, transaction=empty_media, previous_hash=0, transaction_hash="")
         self.add_block(new_block)
 
         return new_block
@@ -91,17 +95,23 @@ class Blockchain:
         self.unconfirmed_transactions= new_trans.copy()
         return new_trans
     
-    def mine(self):
+    def mine(self,ownerprivatekey, pubkey):
         #create a block, verify its originality and add to the blockchain
         if (len(self.chain) ==0):
             block_idx = 1
             previous_hash = 0
+            transaction_hash = ""
         else:
             block_idx = self.chain[-1].index + 1
             previous_hash = self.chain[-1].compute_hash()
-        block = Block(block_idx, self.unconfirmed_transactions, previous_hash)
+            transaction_hash = ""
+        block = Block(block_idx, self.unconfirmed_transactions, previous_hash, transaction_hash)
+               #idar eth wala code add kar
         if(self.verify_block(block)):
+            transaction_hash = self.store_cid_on_ethereum(ownerprivatekey, pubkey)
+            block = Block(block_idx, self.unconfirmed_transactions, previous_hash, transaction_hash)
             self.add_block(block)
+            #idar eth wala code add kar
             return block
         else:
             return None
@@ -125,15 +135,15 @@ class Blockchain:
                         print(score)
                         if score > 0.9:
                           return 0
-                    # if block.transaction['genre'] == 'Text':
-                    #     score = tc.check_text_similarity('./uploads/' + block.transaction['media'], './uploads/'+prev_block.transaction['media'])
-                    #     print(score)
-                    #     if score < 100:
-                    #         return 0
+                    if block.transaction['genre'] == 'Text':
+                        score = tc.check_text_similarity('./uploads/' + block.transaction['media'], './uploads/'+prev_block.transaction['media'])
+                        print(score)
+                        if score < 100:
+                            return 0
                     if block.transaction['genre'] == "Image":
                         score = ic.calc_accuracy('./uploads/' + block.transaction['media'], './uploads/' + prev_block.transaction['media'])
                         print(score)
-                        if score < 0.4:
+                        if score < 10:
                             return 0
                 except:
                     return 0
@@ -149,11 +159,11 @@ class Blockchain:
                         print(score)
                         if score > 0.9:
                           return prev_block
-                    # if transaction['genre'] == 'Text':
-                    #     score = tc.check_text_similarity('./tmp/' + transaction['media'], './uploads/'+prev_block.transaction['media'])
-                    #     print(score)
-                    #     if score < 100:
-                    #         return prev_block
+                    if transaction['genre'] == 'Text':
+                        score = tc.check_text_similarity('./tmp/' + transaction['media'], './uploads/'+prev_block.transaction['media'])
+                        print(score)
+                        if score < 100:
+                            return prev_block
                     if transaction['genre'] == "Image":
                         score = ic.calc_accuracy('./tmp/' + transaction['media'], './uploads/' + prev_block.transaction['media'])
                         print(score)
@@ -166,6 +176,7 @@ class Blockchain:
     
     def add_block(self, block):
         self.chain.append(block)
+        print(block)
 
         with open('./blockchain/chain.pkl', 'wb') as output:
             pickle.dump(self.chain, output, pickle.HIGHEST_PROTOCOL)
@@ -173,8 +184,84 @@ class Blockchain:
     
     def check_integrity(self):
         return 0
+    
+    def upload_to_ipfs(self, file_path):
 
-    """ Function that returns the last block on the chain"""
+        API_KEY = '*your_API_KEY*'
+        API_SECRET = '*your_API_SECRET*'
+
+        # Set the endpoint for uploading files to IPFS
+        UPLOAD_ENDPOINT = 'https://api.pinata.cloud/pinning/pinFileToIPFS'
+        headers = {
+            'pinata_api_key': API_KEY,
+            'pinata_secret_api_key': API_SECRET
+        }
+
+        # Prepare the file data
+        file_data = {'file': open(file_path, 'rb')}
+
+        # Make the POST request to upload the file
+        response = requests.post(UPLOAD_ENDPOINT, headers=headers, files=file_data)
+
+        if response.status_code == 200:
+            ipfs_hash = response.json()['IpfsHash']
+            ipfs_path = f'URL: https://gateway.ipfs.io/ipfs/{ipfs_hash}'
+            print('File uploaded successfully!')
+            print('IPFS Hash:', ipfs_hash)
+            print(f'URL: https://gateway.ipfs.io/ipfs/{ipfs_hash}')
+        else:
+            print('Failed to upload file. Status code:', response.status_code)
+            print('Response:', response.text)
+        
+        return ipfs_hash
+
+    def store_cid_on_ethereum(self, PrivateKey, IPFS_CID):
+
+        infura_url = "HTTP://127.0.0.1:7545"
+        private_key = PrivateKey
+        cid = IPFS_CID
+        contract_address = "*your_Contract_address*"
+        store_cid_function_name = "storeCID"
+        contract_abi = [{"inputs": [],"name": "cid","outputs": [{"internalType": "string","name": "","type": "string"}],"stateMutability": "view","type": "function"},{"inputs": [{"internalType": "string","name": "_cid","type": "string"}],"name": "storeCID","outputs": [],"stateMutability": "nonpayable","type": "function"}]
+
+        try:
+            web3 = Web3(Web3.HTTPProvider(infura_url))
+            contract = web3.eth.contract(address=contract_address, abi=contract_abi)
+
+            # Encode the function call with the CID parameter
+            encoded_function_call = contract.encodeABI(
+                fn_name=store_cid_function_name,
+                args=[cid],
+            )
+
+            # Create the account objec
+            account = web3.eth.account.from_key(private_key)
+
+            # Create the transaction object
+            txn = {
+                "from": account.address,
+                "to": contract_address,
+                "gas": 200000,  # Adjust gas limit as needed
+                "gasPrice": web3.to_wei('5', 'gwei'),  # Convert gas price to Wei
+                "nonce": web3.eth.get_transaction_count(account.address),
+                "data": encoded_function_call,
+            }
+
+            # Sign the transaction
+            signed_txn = account.sign_transaction(txn)
+
+            # Broadcast the transaction
+            tx_hash = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
+
+            print(f"Transaction hash: {web3.to_hex(tx_hash)}")
+            
+            return web3.to_hex(tx_hash)
+        except Exception as e:
+            print(f"Error storing CID: {e}")
+
+
     @property
     def last_block(self):
         return self.chain[-1]
+    
+

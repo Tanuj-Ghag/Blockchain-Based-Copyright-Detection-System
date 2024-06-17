@@ -72,6 +72,7 @@ function addEmptyRow() {
 function showDetails(id) {
     console.log(id);
     let currentBlock = chain[parseInt(id) - 1];
+    console.log(currentBlock);
     var pubkeyBlob = new Blob([currentBlock.transaction.public_key], { type: 'text/plain' });
 
     $('#detailsModalLabel').html("<h4>" + currentBlock.transaction.title + "</h4>");
@@ -81,7 +82,9 @@ function showDetails(id) {
         "<b>" + "Genre: " + "</b>" + currentBlock.transaction.genre + "<br/>" +
         "<span style='word-wrap: break-word;'><b>Previous Hash: " + "</b>" + currentBlock.previous_hash + "</span><br/>" +
         "<b>" + "Timestamp: " + "</b>" + new Date(currentBlock.timestamp) + "<br/>" +
-        "<b>" + "Owner Public Key: " + "</b>" + '<a href="' + window.URL.createObjectURL(pubkeyBlob) + '" download="pubkey-' + currentBlock.transaction.media + '.asc" title="Owner Public Key"><i class="fas fa-key"></i></a>' + "<br/>" +
+        "<span style='word-wrap: break-word;'><b>" + "Content Identifier: " + "</b>" + currentBlock.transaction.public_key + "<br/>" +
+        "<span style='word-wrap: break-word;'><b>" + "Link to file: " + "</b>" + "https://gateway.ipfs.io/ipfs/" + currentBlock.transaction.public_key + "<br/>" +
+        "<b>" + "Transaction ID(hash): " + "</b>" + currentBlock.transaction_hash + "<br/>" +
         "<b>" + "Original Filename: " + "</b>" + currentBlock.transaction.filename + "<br/>" +
         "<b>" + "Original File: " + "</b>" + '<a href="/uploads/' + currentBlock.transaction.media + '" download="' + currentBlock.transaction.filename + '" title="Original File"><i class="fas fa-file-download"></i></a>' + "<br/>"
     );
@@ -140,7 +143,6 @@ console.log(filter);
 
 
 }
-
 
 
 function toggleFilterButton() {

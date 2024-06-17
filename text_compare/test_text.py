@@ -24,12 +24,7 @@ import hashlib as hasher
 # h2_1 = hasher.sha256(file2_str).hexdigest()
 # h3_1 = hasher.sha256(file3_str).hexdigest()
 
-# # print(h4)
-# diff = tlsh.diff(h1, h2);
-# diff2 = tlsh.diff(h4, h1);
-# # threshold at 100
-# print(diff)
-# print(diff2)
+# diff = tlsh.diff(h1_1, h2_1);
 
 def check_text_similarity(path1, path2):
 	file1_str = open(path1, 'rb').read();

@@ -19,13 +19,9 @@ def calc_accuracy(path1, path2):
         img1 = Image.open(path1)
         img2 = Image.open(path2)
 
-        # Compute the perceptual hash of the images
         hash1 = imagehash.average_hash(img1)
         hash2 = imagehash.average_hash(img2)
 
-        # Calculate the hamming distance between the hashes
-        # The Hamming distance is a measure of the number of differing bits between two strings.
-        # A lower Hamming distance implies a higher similarity.
         hamming_distance = hash1 - hash2
 
         return hamming_distance

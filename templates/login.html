@@ -29,7 +29,7 @@
         <ul class="nav_items">
           <li class="nav_item">
             <a href="#" class="nav_link">Home</a>
-            <a href="/blockchain" class="nav_link">Blockchain</a>
+            <a href="/blockchain" class="nav_link" disabled>Blockchain</a>
             <a href="/faq" class="nav_link">Services</a>
             <a href="/about" class="nav_link">About us</a>
           </li>
@@ -41,60 +41,14 @@
     <div id="homelorem">
         <h1 id="firstlor">Securing Creativity, Empowering Innovation</h1>
         <p id="secondlor">Unveiling the Future with Blockchain-Powered Copyright Detection.</p>
-        <button class="button" id="GetStarted-open">Get Started</button>
+        <form action="/logindetails" method="POST">
+          <button class="button" id="GetStarted-open">Get Started</button>
+        </form>
     </div>
 
     <!-- Home -->
     <section class="home">
-      <div class="form_container">
-        <i class="uil uil-times form_close"></i>
-        <!-- Login From -->
-        <div class="form login_form">
-          <form action="/logindetails" method="POST">
-            <h2>Login</h2>
-            <div class="input_box">
-              <input type="email" name="email_user" placeholder="Enter your email" required />
-              <i class="uil uil-envelope-alt email"></i>
-            </div>
-            <div class="input_box">
-              <input type="text" name="privatekey_user" placeholder="Enter your private key" required />
-              <i class="uil uil-lock password"></i>
-            </div>
-            <div class="option_field">
-              <a href="#" class="forgot_pw">Forgot password?</a>
-            </div>
-            <button class="button">Login Now</button>
-            <div class="login_signup">Don't have an account? <a href="#" id="signup">Signup</a></div>
-          </form>
-        </div>
-        <!-- Signup From -->
-        <div class="form signup_form">
-          <form action="/signup_details" method="post">
-            <h2>Signup</h2>
-            <div class="input_box">
-              <input type="text" name="signup_name" placeholder="Enter your name" required />
-              <i class="uil uil-user-circle email"></i>
-            </div>
-            <div class="input_box">
-              <input type="email" name="signup_email" placeholder="Enter your email" required />
-              <i class="uil uil-envelope-alt email"></i>
-            </div>
-            <button id="genkey" class="button">Generate Keys</button>
-            
-            <div class="showkeys input_box">
-              <label for="">Public Key:</label>
-              <input id="pubkeytext" type="text" name="signup_pubkey"/>
-            </div>
-            <div style="margin-top: 45px;" class="showkeys input_box">
-              <label for="">Private Key:</label>
-              <input id="privatetext" type="text" name="signup_prikey"/>
-              <p style="font-size: small;">*Don't share this with anyone</p>
-            </div>
-            <button id="logoncsign" class="button">Sign in</button>
-            <div class="login_signup">Already have an account? <a href="#" id="login">Login</a></div>
-          </form>
-        </div>
-      </div>
+      
     </section>
     <script src="../static/login.js"></script>
   </body>

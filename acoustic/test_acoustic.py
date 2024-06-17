@@ -2,15 +2,13 @@ import acoustid
 import numpy as np
 import chromaprint
 
-path = './heaven.mp3'
-path2 = './heaven_small.mp3'
-path3 = './undertheice.mp3'
+path = './media/heaven.mp3'
+path2 = './media/heaven_small.mp3'
+path3 = './media/undertheice.mp3'
 
 dur, fig = acoustid.fingerprint_file(path)
 raw_fp = chromaprint.decode_fingerprint(fig)[0]
 fp = ','.join(map(str, raw_fp))
-fig = fp.decode('utf8')
-
 
 dur, fig2 = acoustid.fingerprint_file(path2)
 raw_fp2 = chromaprint.decode_fingerprint(fig2)[0]
